@@ -1,7 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 
 export class WebSocketDurable extends DurableObject {
-	/** @typedef { Map<WebSocket, { UuserId: string, username: string }> }*/
+	/** @typedef { Map<WebSocket, { userId: string, username: string }> }*/
 	sockets = new Map();
 	env;
 
@@ -128,6 +128,16 @@ export class WebSocketDurable extends DurableObject {
 							this.sockets.delete(socket);
 						}
 					}
+
+					const stub = this.env.TRACKER_DURABLE.getByName('tracker');
+					await stub.uploadTrackingData(`https://upload-tracking-data/internal/upload-event`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Auth-Key': this.env.SECRET_KEY
+						},
+						body: JSON.stringify(trackingData)
+					});
 
 					const embedPayload = {
 						embeds: [
