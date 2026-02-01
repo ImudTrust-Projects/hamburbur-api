@@ -95,19 +95,19 @@
 			"status": "Unaffected"
 		},
 		{
-			"consoleName": "damnThatsAlotOfInfo",
+			"consoleName": "DamnThatsAlotOfInfo",
 			"status": "Unaffected"
 		},
 		{
-			"consoleName": "zlothyNametag",
+			"consoleName": "ZlothYNametag",
 			"status": "Unaffected"
 		},
 		{
-			"consoleName": "eiop",
+			"consoleName": "EIOP",
 			"status": "Unaffected"
 		},
 		{
-			"consoleName": "castingShouldBeFree",
+			"consoleName": "CastingShouldBeFree",
 			"status": "Unaffected"
 		}
 	],
