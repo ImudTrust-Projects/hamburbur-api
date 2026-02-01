@@ -37,7 +37,7 @@ export class WebSocketDurable extends DurableObject {
 				/** @returns {{ Username: string }} */
 				user => ({
 					username: user.username
-				}),
+				})
 			)
 		}), {
 			headers: { 'Content-Type': 'application/json' },
@@ -128,54 +128,37 @@ export class WebSocketDurable extends DurableObject {
 						}
 					}
 
-					const stub = this.env.TRACKER_DURABLE.getByName('tracker');
-					await stub.uploadTrackingData(`https://upload-tracking-data/internal/upload-event`, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-							'Auth-Key': this.env.SECRET_KEY
-						},
-						body: JSON.stringify(trackingData)
-					});
-
 					const embedPayload = {
 						embeds: [
 							{
 								title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
 								fields: [
-									{ name: 'Room Code', value: trackingData.RoomCode },
+									{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
 									{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
-									{ name: 'In Game Name', value: trackingData.InGameName },
-									{ name: 'GameMode String', value: trackingData.GameModeString }
+									{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
+									{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' }
 								],
 								color: 0x2B265B
 							}
 						]
 					};
 
-					await fetch(this.env.GC_WEBHOOK, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify(embedPayload)
-					});
+					const sendWebhook = async (url) => {
+						const res = await fetch(url, {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify(embedPayload)
+						});
 
-					await fetch(this.env.HDM_WEBHOOK, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify(embedPayload)
-					});
+						const text = await res.text();
+						console.log('Webhook status:', res.status, text);
+					};
 
-					await fetch(this.env.AMP_WEBHOOK, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify(embedPayload)
-					});
+					await sendWebhook(this.env.GC_WEBHOOK);
+					await sendWebhook(this.env.HDM_WEBHOOK);
+					await sendWebhook(this.env.AMP_WEBHOOK);
 					break;
 
 				case 'broadcastData':

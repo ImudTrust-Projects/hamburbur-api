@@ -11,8 +11,7 @@
 	"migrations": [
 		{
 			"new_sqlite_classes": [
-				"WebSocketDurable",
-				"TrackerDurable"
+				"WebSocketDurable"
 			],
 			"tag": "v1"
 		}
@@ -22,10 +21,6 @@
 			{
 				"class_name": "WebSocketDurable",
 				"name": "WEBSOCKET_DURABLE"
-			},
-			{
-				"class_name": "TrackerDurable",
-				"name": "TRACKER_DURABLE"
 			}
 		]
 	},

@@ -1,5 +1,4 @@
 export { WebSocketDurable } from './durable/websocket';
-export { TrackerDurable } from './durable/tracker';
 import data from './data';
 
 export default {
@@ -16,17 +15,12 @@ export default {
 			return stub.handleDashboard(request);
 		}
 
-		if (url.pathname === '/tracker') {
-			const stub = env.TRACKER_DURABLE.getByName('tracker');
-			return stub.fetch(request);
-		}
-
 		if (url.pathname === '/data') {
 			return new Response(JSON.stringify(data), {
 				headers: { 'Content-Type': 'application/json' }
 			});
 		}
 
-		return new Response('hiiii');
+		return new Response('not done yet gangalang');
 	}
 };
