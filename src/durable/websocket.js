@@ -19,7 +19,7 @@ export class WebSocketDurable extends DurableObject {
 			})
 		);
 
-		const payload = JSON.stringify({ type: 'broadcastUsers', Users: users });
+		const payload = JSON.stringify({ type: 'broadcastUsers', users: users });
 
 		for (const socket of this.sockets.keys()) {
 			try {
@@ -33,12 +33,11 @@ export class WebSocketDurable extends DurableObject {
 
 	handleDashboard(request) {
 		return new Response(JSON.stringify({
-			'Amount of connected sockets': this.sockets.size,
-			'Connected hamburbur users': Array.from(this.sockets.values()).map(
+			'hamburbur users': Array.from(this.sockets.values()).map(
 				/** @returns {{ Username: string }} */
 				user => ({
-					Username: user.username
-				})
+					username: user.username
+				}),
 			)
 		}), {
 			headers: { 'Content-Type': 'application/json' },
