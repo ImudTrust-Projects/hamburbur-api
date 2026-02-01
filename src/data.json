@@ -60,16 +60,6 @@
 	],
 	"modSpecificAdmins": [
 		{
-			"consoleName": "This is just to showcase the formatting",
-			"admins": [
-				{
-					"name": "Player Name",
-					"userId": "Player UserID",
-					"superAdmin": "'True' or 'False'"
-				}
-			]
-		},
-		{
 			"consoleName": "EIOP",
 			"admins": [
 				{
@@ -109,13 +99,17 @@
 		{
 			"consoleName": "CastingShouldBeFree",
 			"status": "Unaffected"
+		},
+		{
+			"consoleName": "NMGC",
+			"status": "Unaffected"
 		}
 	],
 	"modVersionInfo": [
 		{
 			"modName": "NMGC",
-			"latestVersion": "1.0.0",
-			"minimumVersion": "1.0.0",
+			"latestVersion": "1.0.1",
+			"minimumVersion": "1.0.1",
 			"notLatestMessage": "You are not on the latest version",
 			"outdatedMessage": "You are on an outdated version"
 		},
@@ -140,8 +134,8 @@
 		"LMAPY.": "Forest Guide Stick"
 	},
 	"specialCosmetics": {
-		"LBAAD.": "ADMIN",
-		"LBAAK.": "STICK",
+		"LBAAD.": "ADMIN BADGE",
+		"LBAAK.": "DEV STICK",
 		"LBADE.": "FINGER PAINTER",
 		"LBANI.": "AA CREATOR",
 		"LBAGS.": "ILLUSTRATOR",
