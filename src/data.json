@@ -82,7 +82,7 @@
 		},
 		{
 			"consoleName": "hamburbur",
-			"status": "Unaffected"
+			"status": "Only hamburbur"
 		},
 		{
 			"consoleName": "DamnThatsAlotOfInfo",
@@ -94,15 +94,15 @@
 		},
 		{
 			"consoleName": "EIOP",
-			"status": "Unaffected"
+			"status": "Only hamburbur"
 		},
 		{
 			"consoleName": "CastingShouldBeFree",
-			"status": "Unaffected"
+			"status": "Only hamburbur"
 		},
 		{
 			"consoleName": "NMGC",
-			"status": "Unaffected"
+			"status": "Only hamburbur"
 		}
 	],
 	"modVersionInfo": [
