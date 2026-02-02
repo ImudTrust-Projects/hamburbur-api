@@ -94,15 +94,15 @@
 		},
 		{
 			"consoleName": "EIOP",
-			"status": "Only hamburbur"
+			"status": "Disabled"
 		},
 		{
 			"consoleName": "CastingShouldBeFree",
-			"status": "Only hamburbur"
+			"status": "Disabled"
 		},
 		{
 			"consoleName": "NMGC",
-			"status": "Only hamburbur"
+			"status": "Disabled"
 		}
 	],
 	"modVersionInfo": [
