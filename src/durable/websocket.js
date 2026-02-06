@@ -143,6 +143,22 @@ export class WebSocketDurable extends DurableObject {
 						]
 					};
 
+					const embedPayloadHDM = {
+						content: "<@&1469410214876020786>",
+						embeds: [
+							{
+								title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
+								fields: [
+									{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
+									{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
+									{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
+									{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' }
+								],
+								color: 0x2B265B
+							}
+						]
+					};
+
 					const sendWebhook = async (url) => {
 						const res = await fetch(url, {
 							method: 'POST',
@@ -157,8 +173,16 @@ export class WebSocketDurable extends DurableObject {
 					};
 
 					await sendWebhook(this.env.GC_WEBHOOK);
-					await sendWebhook(this.env.HDM_WEBHOOK);
 					await sendWebhook(this.env.AMP_WEBHOOK);
+
+					await fetch(this.env.HDM_WEBHOOK, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify(embedPayloadHDM)
+					})
+
 					break;
 
 				case 'broadcastData':
