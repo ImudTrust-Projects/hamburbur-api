@@ -2,7 +2,8 @@ import { DurableObject } from 'cloudflare:workers';
 
 export class WebSocketDurable extends DurableObject {
 	/** @typedef { Map<WebSocket, { userId: string, username: string }> }*/
-	sockets = new Map();
+	hamburburSockets = new Map();
+	lastTrackingData;
 	env;
 
 	constructor(ctx, env) {
@@ -11,7 +12,7 @@ export class WebSocketDurable extends DurableObject {
 	}
 
 	broadcastUsers() {
-		const users = Array.from(this.sockets.values()).map(
+		const users = Array.from(this.hamburburSockets.values()).map(
 			/** @returns {{ userId: string, username: string }} */
 			user => ({
 				userId: user.userId,
@@ -21,19 +22,28 @@ export class WebSocketDurable extends DurableObject {
 
 		const payload = JSON.stringify({ type: 'broadcastUsers', users: users });
 
-		for (const socket of this.sockets.keys()) {
+		for (const socket of this.hamburburSockets.keys()) {
 			try {
 				socket.send(payload);
 			} catch (e) {
 				console.error(e);
-				this.sockets.delete(socket);
+				this.hamburburSockets.delete(socket);
 			}
 		}
 	}
 
-	handleDashboard(request) {
+	tracker(request) {
+		const payload = this.lastTrackingData ?? { error: 'No tracking data yet' };
+
+		return new Response(JSON.stringify(payload), {
+			headers: { 'Content-Type': 'application/json' },
+			status: 200
+		});
+	}
+
+	dashboard(request) {
 		return new Response(JSON.stringify({
-			'hamburbur users': Array.from(this.sockets.values()).map(
+			'hamburbur users': Array.from(this.hamburburSockets.values()).map(
 				/** @returns {{ Username: string }} */
 				user => ({
 					username: user.username
@@ -45,7 +55,7 @@ export class WebSocketDurable extends DurableObject {
 		});
 	}
 
-	async fetch(request) {
+	async websocket(request) {
 		const upgradeHeader = request.headers.get('Upgrade');
 
 		if (!upgradeHeader || upgradeHeader !== 'websocket') {
@@ -82,7 +92,7 @@ export class WebSocketDurable extends DurableObject {
 		const [client, server] = Object.values(webSocketPair);
 
 		server.accept();
-		this.sockets.set(server, { userId: userId, username: username });
+		this.hamburburSockets.set(server, { userId: userId, username: username });
 
 		server.addEventListener('message', async event => {
 			const data = JSON.parse(event.data);
@@ -119,12 +129,13 @@ export class WebSocketDurable extends DurableObject {
 
 				case 'telemetryUploadSpecial':
 					const trackingData = data.trackingData;
-					for (const socket of this.sockets.keys()) {
+					this.lastTrackingData = trackingData;
+					for (const socket of this.hamburburSockets.keys()) {
 						try {
 							socket.send(JSON.stringify(data));
 						} catch (e) {
 							console.error(e);
-							this.sockets.delete(socket);
+							this.hamburburSockets.delete(socket);
 						}
 					}
 
@@ -144,7 +155,7 @@ export class WebSocketDurable extends DurableObject {
 					};
 
 					const embedPayloadHDM = {
-						content: "<@&1469410214876020786>",
+						content: '<@&1469410214876020786>',
 						embeds: [
 							{
 								title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
@@ -181,28 +192,28 @@ export class WebSocketDurable extends DurableObject {
 							'Content-Type': 'application/json'
 						},
 						body: JSON.stringify(embedPayloadHDM)
-					})
+					});
 
 					break;
 
 				case 'broadcastData':
-					for (const socket of this.sockets.keys()) {
+					for (const socket of this.hamburburSockets.keys()) {
 						try {
 							socket.send(JSON.stringify(data));
 						} catch (e) {
 							console.error(e);
-							this.sockets.delete(socket);
+							this.hamburburSockets.delete(socket);
 						}
 					}
 					break;
 
 				case 'broadcastDataNonPhotonDependent':
-					for (const socket of this.sockets.keys()) {
+					for (const socket of this.hamburburSockets.keys()) {
 						try {
 							socket.send(JSON.stringify(data));
 						} catch (e) {
 							console.error(e);
-							this.sockets.delete(socket);
+							this.hamburburSockets.delete(socket);
 						}
 					}
 					break;
@@ -210,7 +221,7 @@ export class WebSocketDurable extends DurableObject {
 		});
 
 		server.addEventListener('close', event => {
-			this.sockets.delete(event.target);
+			this.hamburburSockets.delete(event.target);
 			this.broadcastUsers();
 		});
 

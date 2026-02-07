@@ -7,12 +7,17 @@ export default {
 
 		if (url.pathname === '/websocket') {
 			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
-			return stub.fetch(request);
+			return stub.websocket(request);
 		}
 
 		if (url.pathname === '/dashboard') {
 			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
-			return stub.handleDashboard(request);
+			return stub.dashboard(request);
+		}
+
+		if (url.pathname === '/tracker') {
+			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
+			return stub.tracker(request);
 		}
 
 		if (url.pathname === '/data') {
