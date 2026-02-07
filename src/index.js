@@ -7,7 +7,7 @@ export default {
 
 		if (url.pathname === '/websocket') {
 			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
-			return stub.websocket(request);
+			return stub.fetch(request);
 		}
 
 		if (url.pathname === '/dashboard') {

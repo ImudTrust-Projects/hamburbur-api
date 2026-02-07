@@ -55,7 +55,7 @@ export class WebSocketDurable extends DurableObject {
 		});
 	}
 
-	async websocket(request) {
+	async fetch(request) {
 		const upgradeHeader = request.headers.get('Upgrade');
 
 		if (!upgradeHeader || upgradeHeader !== 'websocket') {
