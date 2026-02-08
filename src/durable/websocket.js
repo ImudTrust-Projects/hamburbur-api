@@ -133,7 +133,7 @@ export class WebSocketDurable extends DurableObject {
 
 						for (const socket of this.trackerSockets) {
 							try {
-								socket.send(JSON.stringify(data));
+								socket.send(JSON.stringify(trackingData));
 							} catch (e) {
 								console.error(e);
 								this.hamburburSockets.delete(socket);
@@ -265,7 +265,7 @@ export class WebSocketDurable extends DurableObject {
 
 				for (const socket of this.trackerSockets) {
 					try {
-						socket.send(JSON.stringify(data));
+						socket.send(JSON.stringify(trackingData));
 					} catch (e) {
 						console.error(e);
 						this.hamburburSockets.delete(socket);
