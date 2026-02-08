@@ -15,14 +15,14 @@ export default {
 			return stub.fetch(request);
 		}
 
+		if (url.pathname === '/tracker') {
+			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
+			return stub.fetch(request);
+		}
+
 		if (url.pathname === '/dashboard') {
 			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
 			return stub.dashboard(request);
-		}
-
-		if (url.pathname === '/tracker') {
-			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
-			return stub.tracker(request);
 		}
 
 		if (url.pathname === '/data') {
