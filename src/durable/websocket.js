@@ -188,6 +188,7 @@ export class WebSocketDurable extends DurableObject {
 
 						await sendWebhook(this.env.GC_WEBHOOK);
 						await sendWebhook(this.env.AMP_WEBHOOK);
+						await sendWebhook(this.env.MB_WEBHOOK);
 
 						await fetch(this.env.HDM_WEBHOOK, {
 							method: 'POST',
@@ -311,6 +312,7 @@ export class WebSocketDurable extends DurableObject {
 
 				await sendWebhook(this.env.GC_WEBHOOK);
 				await sendWebhook(this.env.AMP_WEBHOOK);
+				await sendWebhook(this.env.MB_WEBHOOK);
 
 				await fetch(this.env.HDM_WEBHOOK, {
 					method: 'POST',
