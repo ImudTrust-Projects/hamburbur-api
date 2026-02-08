@@ -10,6 +10,11 @@ export default {
 			return stub.fetch(request);
 		}
 
+		if (url.pathname === '/telemetry') {
+			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
+			return stub.fetch(request);
+		}
+
 		if (url.pathname === '/dashboard') {
 			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
 			return stub.dashboard(request);
