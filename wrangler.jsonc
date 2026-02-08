@@ -24,6 +24,12 @@
 			}
 		]
 	},
+	"kv_namespaces": [
+		{
+			"binding": "DATA_KV",
+			"id": "3b727e9eae69478283a01b6a7017c28e"
+		}
+	],
 	"observability": {
 		"enabled": true
 	}
