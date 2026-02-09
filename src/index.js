@@ -420,24 +420,44 @@ function removeModSpecificAdmin(currentData, { consoleName, userId }) {
 }
 
 function addSpecialCosmetic(currentData, { cosmeticId, nonDetailedName, detailedName }) {
-	if (!cosmeticId || !nonDetailedName || !detailedName) return { success: false, error: 'Missing necessary data' };
-	if (currentData.specialCosmetics.some(c => c.key === cosmeticId) || currentData.specialCosmeticsDetailed.some(c => c.key === cosmeticId)) return {
-		success: false,
-		error: 'Special cosmetic already there'
-	};
-	currentData.specialCosmetics.add(cosmeticId, nonDetailedName);
-	currentData.specialCosmeticsDetailed.add(cosmeticId, detailedName);
+	if (!cosmeticId || !nonDetailedName || !detailedName) {
+		return { success: false, error: 'Missing necessary data' };
+	}
+
+	if (
+		Object.prototype.hasOwnProperty.call(currentData.specialCosmetics, cosmeticId) ||
+		Object.prototype.hasOwnProperty.call(currentData.specialCosmeticsDetailed, cosmeticId)
+	) {
+		return {
+			success: false,
+			error: 'Special cosmetic already there'
+		};
+	}
+
+	currentData.specialCosmetics[cosmeticId] = nonDetailedName;
+	currentData.specialCosmeticsDetailed[cosmeticId] = detailedName;
+
 	return { success: true, message: 'Special cosmetic added', data: currentData };
 }
 
 function removeSpecialCosmetic(currentData, { cosmeticId }) {
-	if (!cosmeticId) return { success: false, error: 'Missing necessary data' };
-	if (!currentData.specialCosmetics.some(c => c.key === cosmeticId) && !currentData.specialCosmeticsDetailed.some(c => c.key === cosmeticId)) return {
-		success: false,
-		error: 'Special cosmetic not found'
-	};
-	if (currentData.specialCosmetics.some(c => c.key === cosmeticId)) currentData.specialCosmetics = currentData.specialCosmetics.filter(c => c.key !== cosmeticId);
-	if (currentData.specialCosmeticsDetailed.some(c => c.key === cosmeticId)) currentData.specialCosmeticsDetailed = currentData.specialCosmeticsDetailed.filter(c => c.key !== cosmeticId);
+	if (!cosmeticId) {
+		return { success: false, error: 'Missing necessary data' };
+	}
+
+	const existsInBasic = Object.prototype.hasOwnProperty.call(currentData.specialCosmetics, cosmeticId);
+	const existsInDetailed = Object.prototype.hasOwnProperty.call(currentData.specialCosmeticsDetailed, cosmeticId);
+
+	if (!existsInBasic && !existsInDetailed) {
+		return {
+			success: false,
+			error: 'Special cosmetic not found'
+		};
+	}
+
+	delete currentData.specialCosmetics[cosmeticId];
+	delete currentData.specialCosmeticsDetailed[cosmeticId];
+
 	return { success: true, message: 'Special cosmetic removed', data: currentData };
 }
 
