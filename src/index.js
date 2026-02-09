@@ -25,6 +25,20 @@ export default {
 			return stub.dashboard(request);
 		}
 
+		if (url.pathname === '/banned') {
+			let json = await request.json();
+			let name = json.name;
+			await fetch(env.GC_BANNED_WEBHOOK, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					content: `${name} was just banned by the hamburbur™ ban gun`
+				})
+			});
+		}
+
 		if (url.pathname === '/data') {
 			let currentData = await env.DATA_KV.get('data.json', { type: 'json' });
 			if (!currentData) currentData = structuredClone(data); //fallback
