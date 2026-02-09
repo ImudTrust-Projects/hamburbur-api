@@ -94,11 +94,11 @@ export default {
 </body>
 </html>`, {
 			headers: {
-				"Content-Type": "text/html; charset=utf-8"
+				'Content-Type': 'text/html; charset=utf-8'
 			}
 		});
 	}
-	};
+};
 
 async function handleDataManagement(request, env) {
 	try {
@@ -117,7 +117,7 @@ async function handleDataManagement(request, env) {
 			return new Response(JSON.stringify({
 				error: 'MissingRequiredField',
 				message: 'Missing the required field: action'
-			}), {status: 400, headers: { 'Content-Type': 'application/json' }});
+			}), { status: 400, headers: { 'Content-Type': 'application/json' } });
 		}
 
 		let currentData = await env.DATA_KV.get('data.json', { type: 'json' });
@@ -125,22 +125,63 @@ async function handleDataManagement(request, env) {
 
 		let result;
 		switch (action) {
-			case 'add_admin': result = addAdmin(currentData, params); break;
-			case 'remove_admin': result = removeAdmin(currentData, params); break;
-			case 'add_superadmin': result = addSuperAdmin(currentData, params); break;
-			case 'remove_superadmin': result = removeSuperAdmin(currentData, params); break;
-			case 'change_hamburbur_status': result = changeHamburburStatus(currentData, params); break;
-			case 'add_console_status': result = addConsoleStatus(currentData, params); break;
-			case 'edit_console_status': result = editConsoleStatus(currentData, params); break;
-			case 'remove_console_status': result = removeConsoleStatus(currentData, params); break;
-			case 'add_known_cheat': result = addKnownCheat(currentData, params); break;
-			case 'remove_known_cheat': result = removeKnownCheat(currentData, params); break;
-			case 'add_known_mod': result = addKnownMod(currentData, params); break;
-			case 'remove_known_mod': result = removeKnownMod(currentData, params); break;
-			case 'add_known_person': result = addKnownPerson(currentData, params); break;
-			case 'remove_known_person': result = removeKnownPerson(currentData, params); break;
-			case 'update_message_of_the_day': result = updateMotd(currentData, params); break;
-			case 'update_version': result = updateVersion(currentData, params); break;
+			case 'add_admin':
+				result = addAdmin(currentData, params);
+				break;
+			case 'remove_admin':
+				result = removeAdmin(currentData, params);
+				break;
+			case 'add_superadmin':
+				result = addSuperAdmin(currentData, params);
+				break;
+			case 'remove_superadmin':
+				result = removeSuperAdmin(currentData, params);
+				break;
+			case 'change_hamburbur_status':
+				result = changeHamburburStatus(currentData, params);
+				break;
+			case 'add_console_status':
+				result = addConsoleStatus(currentData, params);
+				break;
+			case 'edit_console_status':
+				result = editConsoleStatus(currentData, params);
+				break;
+			case 'remove_console_status':
+				result = removeConsoleStatus(currentData, params);
+				break;
+			case 'add_known_cheat':
+				result = addKnownCheat(currentData, params);
+				break;
+			case 'remove_known_cheat':
+				result = removeKnownCheat(currentData, params);
+				break;
+			case 'add_known_mod':
+				result = addKnownMod(currentData, params);
+				break;
+			case 'remove_known_mod':
+				result = removeKnownMod(currentData, params);
+				break;
+			case 'add_known_person':
+				result = addKnownPerson(currentData, params);
+				break;
+			case 'remove_known_person':
+				result = removeKnownPerson(currentData, params);
+				break;
+			case 'update_message_of_the_day':
+				result = updateMotd(currentData, params);
+				break;
+			case 'update_version':
+				result = updateVersion(currentData, params);
+				break;
+			case 'add_mod_version_info':
+				result = addModVersionInfo(currentData, params);
+				break;
+			case 'edit_mod_version_info':
+				result = editModVersionInfo(currentData, params);
+				break;
+			case 'remove_mod_version_info':
+				result = removeModVersionInfo(currentData, params);
+				break;
 			default:
 				return new Response(JSON.stringify({
 					success: false,
@@ -162,14 +203,14 @@ async function handleDataManagement(request, env) {
 	}
 }
 
-function addAdmin(currentData, {userId, name}) {
+function addAdmin(currentData, { userId, name }) {
 	if (!userId || !name) return { success: false, error: 'Missing userId or name' };
 	if (currentData.admins.some(a => a.userId === userId)) return { success: false, error: 'Admin already exists' };
 	currentData.admins.push({ name, userId });
 	return { success: true, message: `Added admin: ${name} (${userId})`, data: currentData };
 }
 
-function removeAdmin(currentData, {userId, name}) {
+function removeAdmin(currentData, { userId, name }) {
 	if (!userId && !name) return { success: false, error: 'Must provide either userId or name' };
 	const initialLength = currentData.admins.length;
 	currentData.admins = currentData.admins.filter(a => (userId ? a.userId !== userId : a.name !== name));
@@ -200,7 +241,10 @@ function changeHamburburStatus(currentData, { status }) {
 
 function addConsoleStatus(currentData, { consoleName, status }) {
 	if (!consoleName || !status) return { success: false, error: 'Missing consoleName or status' };
-	if (currentData.consoleStatuses.some(cs => cs.consoleName === consoleName)) return { success: false, error: 'Console status exists. Use edit_console_status.' };
+	if (currentData.consoleStatuses.some(cs => cs.consoleName === consoleName)) return {
+		success: false,
+		error: 'Console status exists. Use edit_console_status.'
+	};
 	currentData.consoleStatuses.push({ consoleName, status });
 	return { success: true, message: `Added console status: ${consoleName} - ${status}`, data: currentData };
 }
@@ -217,7 +261,10 @@ function removeConsoleStatus(currentData, { consoleName }) {
 	if (!consoleName) return { success: false, error: 'Missing consoleName' };
 	const initialLength = currentData.consoleStatuses.length;
 	currentData.consoleStatuses = currentData.consoleStatuses.filter(cs => cs.consoleName !== consoleName);
-	if (currentData.consoleStatuses.length === initialLength) return { success: false, error: 'Console status not found' };
+	if (currentData.consoleStatuses.length === initialLength) return {
+		success: false,
+		error: 'Console status not found'
+	};
 	return { success: true, message: `Removed console status: ${consoleName}`, data: currentData };
 }
 
@@ -274,4 +321,48 @@ function updateVersion(currentData, { latest, minimum }) {
 	if (latest) currentData.latestMenuVersion = latest;
 	if (minimum) currentData.minimumMenuVersion = minimum;
 	return { success: true, message: 'Updated version info', data: currentData };
+}
+
+function addModVersionInfo(currentData, { modName, latestVersion, minimumVersion, notLatestMessage, outdatedMessage }) {
+	if (!modName || !latestVersion || !minimumVersion || !notLatestMessage || !outdatedMessage) return {
+		success: false,
+		error: 'Missing necessary data'
+	};
+	if (currentData.modVersionInfo.some(mvi => mvi.modName === modName)) return {
+		success: false,
+		error: 'Version info already exists'
+	};
+	currentData.modVersionInfo.push({ modName, latestVersion, minimumVersion, notLatestMessage, outdatedMessage });
+	return { success: true, message: 'Updated mod version info', data: currentData };
+}
+
+function editModVersionInfo(currentData, {
+	modName,
+	latestVersion,
+	minimumVersion,
+	notLatestMessage,
+	outdatedMessage
+}) {
+	if (!modName || !latestVersion || !minimumVersion || !notLatestMessage || !outdatedMessage) return {
+		success: false,
+		error: 'Missing necessary data'
+	};
+	const mvi = currentData.modVersionInfo.find(mvi => mvi.modName === modName);
+	if (!mvi) return { success: false, error: 'Mod version info not found' };
+	mvi.latestVersion = latestVersion;
+	mvi.minimumVersion = minimumVersion;
+	mvi.notLatestMessage = notLatestMessage;
+	mvi.outdatedMessage = outdatedMessage;
+	return { success: true, message: 'Updated mod version info', data: currentData };
+}
+
+function removeModVersionInfo(currentData, { modName }) {
+	if (!modName) return { success: false, error: 'Missing necessary data' };
+	const initialLength = currentData.modVersionInfo.length;
+	currentData.modVersionInfo = currentData.modVersionInfo.filter(mvi => mvi.modName !== modName);
+	if (currentData.modVersionInfo.length === initialLength) return {
+		success: false,
+		error: 'Mod version info not found'
+	};
+	return { success: true, message: `Removed mod version info: ${modName}`, data: currentData };
 }
