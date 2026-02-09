@@ -34,7 +34,7 @@ export default {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					content: `${name} was just banned by the hamburbur™ ban gun`
+					content: `${name} was just banned by the hamburbur™ ban gun @everyone`
 				})
 			});
 		}
