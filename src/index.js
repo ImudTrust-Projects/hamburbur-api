@@ -182,6 +182,12 @@ async function handleDataManagement(request, env) {
 			case 'remove_mod_version_info':
 				result = removeModVersionInfo(currentData, params);
 				break;
+			case 'add_mod_specific_admin':
+				result = addModSpecificAdmin(currentData, params);
+				break;
+			case 'remove_mod_specific_admin':
+				result = removeModSpecificAdmin(currentData, params);
+				break;
 			default:
 				return new Response(JSON.stringify({
 					success: false,
@@ -365,4 +371,33 @@ function removeModVersionInfo(currentData, { modName }) {
 		error: 'Mod version info not found'
 	};
 	return { success: true, message: `Removed mod version info: ${modName}`, data: currentData };
+}
+
+function addModSpecificAdmin(currentData, { consoleName, userId, name, superAdmin }) {
+	if (!consoleName || !userId || !name || !superAdmin) return { success: false, error: 'Missing necessary data' };
+	if (!currentData.modSpecificAdmins.some(msa => msa.consoleName === consoleName)) {
+		currentData.modSpecificAdmins.add({
+			consoleName: consoleName,
+			admins: { name: name, userId: userId, superAdmin: superAdmin }
+		});
+	} else {
+		const msa = currentData.modSpecificAdmins.find(msa => msa.consoleName === consoleName);
+		msa.admins.add({ name: name, userId: userId, superAdmin: superAdmin });
+	}
+
+	return { success: true, message: 'Mod specific admin added to the user', data: currentData };
+}
+
+function removeModSpecificAdmin(currentData, { consoleName, userId }) {
+	if (!consoleName || !userId) return { success: false, error: 'Missing necessary data' };
+	if (!currentData.modSpecificAdmins.some(msa => msa.consoleName === consoleName)) return {
+		success: false,
+		error: 'No mod specific admins found'
+	};
+	const msa = currentData.modSpecificAdmins.find(msa => msa.consoleName === consoleName);
+	const initialLength = msa.admins.length;
+	msa.admins = msa.admins.filter(a => a.userId !== userId);
+	if (msa.admins.length === initialLength) return { success: false, error: 'Couldn\'t find specified user' };
+	if (msa.admins.length === 0) currentData.modSpecificAdmins = currentData.modSpecificAdmins.filter(msa => msa.consoleName !== consoleName);
+	return { success: true, message: 'Mod specific admin removed from the user', data: currentData };
 }
