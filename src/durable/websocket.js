@@ -35,14 +35,9 @@ export class WebSocketDurable extends DurableObject {
 
 	dashboard(request) {
 		return new Response(JSON.stringify({
-			'hamburbur users': Array.from(this.hamburburSockets.values()).map(
-				/** @returns {{ Username: string }} */
-				user => ({
-					username: user.username
-				})
-			),
 			'amount of people writing tracking data': this.hamburburSockets.size + this.telemetrySockets.size,
-			'amount of people reading tracking data': this.hamburburSockets.size + this.trackerSockets.size
+			'amount of people reading tracking data': this.hamburburSockets.size + this.trackerSockets.size,
+			'hamburbur users': Array.from(this.hamburburSockets.values()).map(user => user.username)
 		}), {
 			headers: { 'Content-Type': 'application/json' },
 			status: 200
