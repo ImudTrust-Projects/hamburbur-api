@@ -4,6 +4,7 @@ export class WebSocketDurable extends DurableObject {
 	/** @typedef { Map<WebSocket, { userId: string, username: string }> }*/
 	hamburburSockets = new Map();
 	trackerSockets = new Set();
+	telemetrySockets = new Set();
 	env;
 
 	constructor(ctx, env) {
@@ -39,7 +40,9 @@ export class WebSocketDurable extends DurableObject {
 				user => ({
 					username: user.username
 				})
-			)
+			),
+			'amount of people writing tracking data': this.hamburburSockets.size + this.telemetrySockets.size,
+			'amount of people reading tracking data': this.hamburburSockets.size + this.trackerSockets.size
 		}), {
 			headers: { 'Content-Type': 'application/json' },
 			status: 200
@@ -249,6 +252,7 @@ export class WebSocketDurable extends DurableObject {
 			const [client, server] = Object.values(webSocketPair);
 
 			server.accept();
+			this.telemetrySockets.add(server);
 
 			server.addEventListener('message', async event => {
 				const data = JSON.parse(event.data);
@@ -327,6 +331,10 @@ export class WebSocketDurable extends DurableObject {
 					},
 					body: JSON.stringify(embedPayloadHDM)
 				});
+			});
+
+			server.addEventListener('close', event => {
+				this.telemetrySockets.delete(event.target);
 			});
 
 			return new Response(null, {
