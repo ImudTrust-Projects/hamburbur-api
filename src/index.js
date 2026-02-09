@@ -188,6 +188,18 @@ async function handleDataManagement(request, env) {
 			case 'remove_mod_specific_admin':
 				result = removeModSpecificAdmin(currentData, params);
 				break;
+			case 'add_special_cosmetic':
+				result = addSpecialCosmetic(currentData, params);
+				break;
+			case 'remove_special_cosmetic':
+				result = removeSpecialCosmetic(currentData, params);
+				break;
+			case 'add_clean_up_forest_object_name':
+				result = addCleanUpForestObjectName(currentData, params);
+				break;
+			case 'clear_clean_up_forest_object_names':
+				result = clearCleanUpForestObjectNames(currentData);
+				break;
 			default:
 				return new Response(JSON.stringify({
 					success: false,
@@ -374,16 +386,21 @@ function removeModVersionInfo(currentData, { modName }) {
 }
 
 function addModSpecificAdmin(currentData, { consoleName, userId, name, superAdmin }) {
-	if (!consoleName || !userId || !name || !superAdmin) return { success: false, error: 'Missing necessary data' };
-	if (!currentData.modSpecificAdmins.some(msa => msa.consoleName === consoleName)) {
-		currentData.modSpecificAdmins.add({
-			consoleName: consoleName,
-			admins: { name: name, userId: userId, superAdmin: superAdmin }
-		});
-	} else {
-		const msa = currentData.modSpecificAdmins.find(msa => msa.consoleName === consoleName);
-		msa.admins.add({ name: name, userId: userId, superAdmin: superAdmin });
+	if (!consoleName || !userId || !name || superAdmin === undefined) {
+		return { success: false, error: 'Missing necessary data' };
 	}
+
+	let msa = currentData.modSpecificAdmins.find(msa => msa.consoleName === consoleName);
+
+	if (!msa) {
+		msa = {
+			consoleName,
+			admins: []
+		};
+		currentData.modSpecificAdmins.push(msa);
+	}
+
+	msa.admins.push({ name, userId, superAdmin });
 
 	return { success: true, message: 'Mod specific admin added to the user', data: currentData };
 }
@@ -400,4 +417,37 @@ function removeModSpecificAdmin(currentData, { consoleName, userId }) {
 	if (msa.admins.length === initialLength) return { success: false, error: 'Couldn\'t find specified user' };
 	if (msa.admins.length === 0) currentData.modSpecificAdmins = currentData.modSpecificAdmins.filter(msa => msa.consoleName !== consoleName);
 	return { success: true, message: 'Mod specific admin removed from the user', data: currentData };
+}
+
+function addSpecialCosmetic(currentData, { cosmeticId, nonDetailedName, detailedName }) {
+	if (!cosmeticId || !nonDetailedName || !detailedName) return { success: false, error: 'Missing necessary data' };
+	if (currentData.specialCosmetics.some(c => c.key === cosmeticId) || currentData.specialCosmeticsDetailed.some(c => c.key === cosmeticId)) return {
+		success: false,
+		error: 'Special cosmetic already there'
+	};
+	currentData.specialCosmetics.add(cosmeticId, nonDetailedName);
+	currentData.specialCosmeticsDetailed.add(cosmeticId, detailedName);
+	return { success: true, message: 'Special cosmetic added', data: currentData };
+}
+
+function removeSpecialCosmetic(currentData, { cosmeticId }) {
+	if (!cosmeticId) return { success: false, error: 'Missing necessary data' };
+	if (!currentData.specialCosmetics.some(c => c.key === cosmeticId) && !currentData.specialCosmeticsDetailed.some(c => c.key === cosmeticId)) return {
+		success: false,
+		error: 'Special cosmetic not found'
+	};
+	if (currentData.specialCosmetics.some(c => c.key === cosmeticId)) currentData.specialCosmetics = currentData.specialCosmetics.filter(c => c.key !== cosmeticId);
+	if (currentData.specialCosmeticsDetailed.some(c => c.key === cosmeticId)) currentData.specialCosmeticsDetailed = currentData.specialCosmeticsDetailed.filter(c => c.key !== cosmeticId);
+	return { success: true, message: 'Special cosmetic removed', data: currentData };
+}
+
+function addCleanUpForestObjectName(currentData, { objectName }) {
+	if (!objectName) return { success: false, error: 'Missing necessary data' };
+	if (!currentData.cleanUpForestObjectNames.some(o => o === objectName)) currentData.cleanUpForestObjectNames.push(objectName);
+	return { success: true, message: 'Added object name', data: currentData };
+}
+
+function clearCleanUpForestObjectNames(currentData) {
+	currentData.cleanUpForestObjectNames = [];
+	return { success: true, message: 'Cleared object names', data: currentData };
 }
