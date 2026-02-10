@@ -49,6 +49,7 @@ export class WebSocketDurable extends DurableObject {
 
 		if (!upgradeHeader || upgradeHeader !== 'websocket') {
 			return new Response(JSON.stringify({
+				status: 426,
 				error: 'InvalidHeaders',
 				message: 'Expected the Upgrade header to be websocket'
 			}), {
@@ -63,7 +64,11 @@ export class WebSocketDurable extends DurableObject {
 			const key = url.searchParams.get('key');
 
 			if (!key || key !== this.env.SECRET_KEY) {
-				return new Response(JSON.stringify({ 'Unauthorized': 'To interact with any of the non static hamburbur APIs you must supply the secret key' }), {
+				return new Response(JSON.stringify({
+					status: 401,
+					error: 'Unauthorized',
+					message: 'To interact with any of the non static hamburbur APIs you must supply the secret key.'
+				}), {
 					headers: { 'Content-Type': 'application/json' },
 					status: 401
 				});
@@ -73,9 +78,13 @@ export class WebSocketDurable extends DurableObject {
 			const username = url.searchParams.get('username');
 
 			if (!userId || !username) {
-				return new Response(JSON.stringify({ 'Invalid parameter passed': 'Expected a \'userId\' and a \'username\' parameter, didn\'t get the expected parameter' }), {
+				return new Response(JSON.stringify({
+					status: 400,
+					error: 'InvalidParameters',
+					message: 'Expected a \'userId\' and a \'username\' parameter, didn\'t get the expected parameter'
+				}), {
 					headers: { 'Content-Type': 'application/json' },
-					status: 404
+					status: 400
 				});
 			}
 
@@ -237,7 +246,11 @@ export class WebSocketDurable extends DurableObject {
 			const key = url.searchParams.get('key');
 
 			if (!key || key !== this.env.TELEMETRY_WRITE_SECRET_KEY) {
-				return new Response(JSON.stringify({ 'error': 'Unauthorized, you must supply the secret key to write telemetry data' }), {
+				return new Response(JSON.stringify({
+					status: 401,
+					error: 'Unauthorized',
+					message: 'You must supply the secret key to write telemetry data.'
+				}), {
 					headers: { 'Content-Type': 'application/json' },
 					status: 401
 				});

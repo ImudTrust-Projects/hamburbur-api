@@ -31,7 +31,7 @@ export default {
 			await fetch(env.GC_BANNED_WEBHOOK, {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json',
+					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
 					content: `${name} was just banned by the hamburbur™ ban gun @everyone`
@@ -50,7 +50,9 @@ export default {
 		if (url.pathname === '/manage' && request.method === 'POST') {
 			return handleDataManagement(request, env);
 		}
-		return new Response(`<!DOCTYPE html>
+
+		if (url.pathname === '/' || !url.pathname) {
+			return new Response(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -107,9 +109,19 @@ export default {
 
 </body>
 </html>`, {
-			headers: {
-				'Content-Type': 'text/html; charset=utf-8'
-			}
+				headers: {
+					'Content-Type': 'text/html; charset=utf-8'
+				}
+			});
+		}
+
+		return new Response(JSON.stringify({
+			status: 404,
+			error: 'NotFound',
+			message: 'The URL you\'re looking for does not exist. Some common URLs here at hamburbur.org are \'https://hamburbur.org/data\' and \'https://hamburbur.org/dashboard\'. Were you perhaps looking for those?'
+		}), {
+			headers: { 'Content-Type': 'application/json' },
+			status: 404
 		});
 	}
 };
