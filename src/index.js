@@ -2,7 +2,6 @@ export { WebSocketDurable } from './durable/websocket';
 import data from './data';
 import mainPage from './main-page.html';
 import { handleDataManagement } from './data-manager';
-import { handlePollRequest } from './polls/poll-manager';
 
 export default {
 	async fetch(request, env, ctx) {
@@ -52,10 +51,6 @@ export default {
 
 		if (url.pathname === '/manage' && request.method === 'POST') {
 			return handleDataManagement(request, env);
-		}
-
-		if (url.pathname === '/poll') {
-			return handlePollRequest(request, env);
 		}
 
 		if (url.pathname === '/' || !url.pathname) {

@@ -32,14 +32,7 @@
 	],
 	"observability": {
 		"enabled": true
-	},
-	"d1_databases": [
-		{
-			"binding": "poll_database",
-			"database_name": "poll-database",
-			"database_id": "f18904f3-6086-41d1-8162-fbe098281d73"
-		}
-	]
+	}
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
