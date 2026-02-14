@@ -94,7 +94,7 @@ export class WebSocketDurable extends DurableObject {
 						{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
 						{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
 						{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' },
-						{ name: 'UserID', value: trackingData.userId || 'Unknown' }
+						{ name: 'UserID', value: trackingData.UserId || 'Unknown' }
 					],
 					color: 0x2B265B
 				}
@@ -111,7 +111,7 @@ export class WebSocketDurable extends DurableObject {
 						{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
 						{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
 						{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' },
-						{ name: 'UserID', value: trackingData.userId || 'Unknown' }
+						{ name: 'UserID', value: trackingData.UserId || 'Unknown' }
 					],
 					color: 0x2B265B
 				}
