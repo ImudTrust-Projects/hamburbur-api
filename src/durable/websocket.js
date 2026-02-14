@@ -4,7 +4,6 @@ export class WebSocketDurable extends DurableObject {
 	/** @typedef { Map<WebSocket, { userId: string, username: string }> }*/
 	hamburburSockets = new Map();
 	trackerSockets = new Set();
-	telemetrySockets = new Set();
 	env;
 
 	constructor(ctx, env) {
@@ -33,9 +32,120 @@ export class WebSocketDurable extends DurableObject {
 		}
 	}
 
+	async telemetry(request) {
+		if (request.method !== 'POST') {
+			return new Response(JSON.stringify({
+				status: 405,
+				error: 'MethodNotAllowed',
+				message: 'You can only send POST requests to this URL'
+			}), {
+				status: 405,
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+		}
+
+		const authKey = request.headers.get('auth-key');
+
+		if (!authKey || authKey !== this.env.TELEMETRY_WRITE_SECRET_KEY) {
+			return new Response(JSON.stringify({
+				status: 401,
+				error: 'Unauthorized',
+				message: 'You are not authorized to send POST requests to this URL.'
+			}), {
+				headers: { 'Content-Type': 'application/json' },
+				status: 401
+			});
+		}
+
+		const trackingData = await request.json();
+		const oldTrackingData = trackingData;
+		delete oldTrackingData.userId;
+		const data = {
+			type: 'telemetryUploadSpecial',
+			trackingData: trackingData,
+		}
+
+		for (const socket of this.hamburburSockets.keys()) {
+			try {
+				socket.send(JSON.stringify(data));
+			} catch (e) {
+				console.error(e);
+				this.hamburburSockets.delete(socket);
+			}
+		}
+
+		for (const socket of this.trackerSockets) {
+			try {
+				socket.send(JSON.stringify(oldTrackingData));
+			} catch (e) {
+				console.error(e);
+				this.hamburburSockets.delete(socket);
+			}
+		}
+
+		const embedPayload = {
+			embeds: [
+				{
+					title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
+					fields: [
+						{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
+						{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
+						{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
+						{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' },
+						{ name: 'UserID', value: trackingData.userId || 'Unknown' }
+					],
+					color: 0x2B265B
+				}
+			]
+		};
+
+		const embedPayloadHDM = {
+			content: '<@&1469410214876020786>',
+			embeds: [
+				{
+					title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
+					fields: [
+						{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
+						{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
+						{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
+						{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' },
+						{ name: 'UserID', value: trackingData.userId || 'Unknown' }
+					],
+					color: 0x2B265B
+				}
+			]
+		};
+
+		const sendWebhook = async (url) => {
+			const res = await fetch(url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(embedPayload)
+			});
+
+			const text = await res.text();
+			console.log('Webhook status:', res.status, text);
+		};
+
+		await sendWebhook(this.env.GC_WEBHOOK);
+		await sendWebhook(this.env.AMP_WEBHOOK);
+		await sendWebhook(this.env.MB_WEBHOOK);
+
+		await fetch(this.env.HDM_WEBHOOK, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(embedPayloadHDM)
+		});
+	}
+
 	dashboard(request) {
 		return new Response(JSON.stringify({
-			'amount of people writing tracking data': this.hamburburSockets.size + this.telemetrySockets.size,
 			'amount of people reading tracking data': this.hamburburSockets.size + this.trackerSockets.size,
 			'hamburbur users': Array.from(this.hamburburSockets.values()).map(user => user.username)
 		}), {
@@ -127,84 +237,6 @@ export class WebSocketDurable extends DurableObject {
 						});
 						break;
 
-					case 'telemetryUploadSpecial':
-						const trackingData = data.trackingData;
-						for (const socket of this.hamburburSockets.keys()) {
-							try {
-								socket.send(JSON.stringify(data));
-							} catch (e) {
-								console.error(e);
-								this.hamburburSockets.delete(socket);
-							}
-						}
-
-						for (const socket of this.trackerSockets) {
-							try {
-								socket.send(JSON.stringify(trackingData));
-							} catch (e) {
-								console.error(e);
-								this.hamburburSockets.delete(socket);
-							}
-						}
-
-						const embedPayload = {
-							embeds: [
-								{
-									title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
-									fields: [
-										{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
-										{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
-										{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
-										{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' }
-									],
-									color: 0x2B265B
-								}
-							]
-						};
-
-						const embedPayloadHDM = {
-							content: '<@&1469410214876020786>',
-							embeds: [
-								{
-									title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
-									fields: [
-										{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
-										{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
-										{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
-										{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' }
-									],
-									color: 0x2B265B
-								}
-							]
-						};
-
-						const sendWebhook = async (url) => {
-							const res = await fetch(url, {
-								method: 'POST',
-								headers: {
-									'Content-Type': 'application/json'
-								},
-								body: JSON.stringify(embedPayload)
-							});
-
-							const text = await res.text();
-							console.log('Webhook status:', res.status, text);
-						};
-
-						await sendWebhook(this.env.GC_WEBHOOK);
-						await sendWebhook(this.env.AMP_WEBHOOK);
-						await sendWebhook(this.env.MB_WEBHOOK);
-
-						await fetch(this.env.HDM_WEBHOOK, {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify(embedPayloadHDM)
-						});
-
-						break;
-
 					case 'broadcastData':
 						for (const socket of this.hamburburSockets.keys()) {
 							try {
@@ -235,115 +267,6 @@ export class WebSocketDurable extends DurableObject {
 			});
 
 			this.broadcastUsers();
-
-			return new Response(null, {
-				status: 101,
-				webSocket: client
-			});
-		}
-
-		if (url.pathname === '/telemetry') {
-			const key = url.searchParams.get('key');
-
-			if (!key || key !== this.env.TELEMETRY_WRITE_SECRET_KEY) {
-				return new Response(JSON.stringify({
-					status: 401,
-					error: 'Unauthorized',
-					message: 'You must supply the secret key to write telemetry data.'
-				}), {
-					headers: { 'Content-Type': 'application/json' },
-					status: 401
-				});
-			}
-
-			const webSocketPair = new WebSocketPair();
-			const [client, server] = Object.values(webSocketPair);
-
-			server.accept();
-			this.telemetrySockets.add(server);
-
-			server.addEventListener('message', async event => {
-				const data = JSON.parse(event.data);
-				const trackingData = data.trackingData;
-
-				for (const socket of this.hamburburSockets.keys()) {
-					try {
-						socket.send(JSON.stringify(data));
-					} catch (e) {
-						console.error(e);
-						this.hamburburSockets.delete(socket);
-					}
-				}
-
-				for (const socket of this.trackerSockets) {
-					try {
-						socket.send(JSON.stringify(trackingData));
-					} catch (e) {
-						console.error(e);
-						this.hamburburSockets.delete(socket);
-					}
-				}
-
-				const embedPayload = {
-					embeds: [
-						{
-							title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
-							fields: [
-								{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
-								{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
-								{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
-								{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' }
-							],
-							color: 0x2B265B
-						}
-					]
-				};
-
-				const embedPayloadHDM = {
-					content: '<@&1469410214876020786>',
-					embeds: [
-						{
-							title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
-							fields: [
-								{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
-								{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
-								{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
-								{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' }
-							],
-							color: 0x2B265B
-						}
-					]
-				};
-
-				const sendWebhook = async (url) => {
-					const res = await fetch(url, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify(embedPayload)
-					});
-
-					const text = await res.text();
-					console.log('Webhook status:', res.status, text);
-				};
-
-				await sendWebhook(this.env.GC_WEBHOOK);
-				await sendWebhook(this.env.AMP_WEBHOOK);
-				await sendWebhook(this.env.MB_WEBHOOK);
-
-				await fetch(this.env.HDM_WEBHOOK, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(embedPayloadHDM)
-				});
-			});
-
-			server.addEventListener('close', event => {
-				this.telemetrySockets.delete(event.target);
-			});
 
 			return new Response(null, {
 				status: 101,
