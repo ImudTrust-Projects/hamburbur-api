@@ -64,8 +64,8 @@ export class WebSocketDurable extends DurableObject {
 		delete oldTrackingData.userId;
 		const data = {
 			type: 'telemetryUploadSpecial',
-			trackingData: trackingData,
-		}
+			trackingData: trackingData
+		};
 
 		for (const socket of this.hamburburSockets.keys()) {
 			try {
@@ -85,62 +85,38 @@ export class WebSocketDurable extends DurableObject {
 			}
 		}
 
-		const embedPayload = {
-			embeds: [
-				{
-					title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
-					fields: [
-						{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
-						{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
-						{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
-						{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' },
-						{ name: 'UserID', value: trackingData.UserId || 'Unknown' }
-					],
-					color: 0x2B265B
-				}
-			]
+		const baseEmbed = {
+			title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
+			fields: [
+				{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
+				{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
+				{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
+				{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' },
+				{ name: 'UserID', value: trackingData.UserId || 'Unknown' }
+			],
+			color: 0x2B265B
 		};
 
-		const embedPayloadHDM = {
-			content: '<@&1469410214876020786>',
-			embeds: [
-				{
-					title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
-					fields: [
-						{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
-						{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
-						{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
-						{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' },
-						{ name: 'UserID', value: trackingData.UserId || 'Unknown' }
-					],
-					color: 0x2B265B
-				}
-			]
-		};
-
-		const sendWebhook = async (url) => {
+		const sendWebhook = async (url, json) => {
 			const res = await fetch(url, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(embedPayload)
+				body: JSON.stringify(json)
 			});
 
 			const text = await res.text();
 			console.log('Webhook status:', res.status, text);
 		};
 
-		await sendWebhook(this.env.GC_WEBHOOK);
-		await sendWebhook(this.env.AMP_WEBHOOK);
-		await sendWebhook(this.env.MB_WEBHOOK);
-
-		await fetch(this.env.HDM_WEBHOOK, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(embedPayloadHDM)
+		await sendWebhook(this.env.HDM_WEBHOOK, { content: '<@&1469410214876020786>', embeds: [baseEmbed] });
+		await sendWebhook(this.env.GC_WEBHOOK, { embeds: [baseEmbed] });
+		await sendWebhook(this.env.AMP_WEBHOOK, { embeds: [baseEmbed] });
+		await sendWebhook(this.env.MB_WEBHOOK, {
+			username: 'Femboy Tracker',
+			avatar_url: 'https://wypher-images.zlothy.uk/',
+			embeds: [baseEmbed]
 		});
 	}
 
