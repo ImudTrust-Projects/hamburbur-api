@@ -32,7 +32,7 @@ export class WebSocketDurable extends DurableObject {
 		}
 	}
 
-	async telemetry(request) {
+	async uploadTrackingData(request) {
 		if (request.method !== 'POST') {
 			return new Response(JSON.stringify({
 				status: 405,
@@ -60,16 +60,14 @@ export class WebSocketDurable extends DurableObject {
 		}
 
 		const trackingData = await request.json();
-		const oldTrackingData = trackingData;
-		delete oldTrackingData.userId;
-		const data = {
+		const hamburburSpecificData = {
 			type: 'telemetryUploadSpecial',
 			trackingData: trackingData
 		};
 
 		for (const socket of this.hamburburSockets.keys()) {
 			try {
-				socket.send(JSON.stringify(data));
+				socket.send(JSON.stringify(hamburburSpecificData));
 			} catch (e) {
 				console.error(e);
 				this.hamburburSockets.delete(socket);
@@ -78,7 +76,7 @@ export class WebSocketDurable extends DurableObject {
 
 		for (const socket of this.trackerSockets) {
 			try {
-				socket.send(JSON.stringify(oldTrackingData));
+				socket.send(JSON.stringify(trackingData));
 			} catch (e) {
 				console.error(e);
 				this.hamburburSockets.delete(socket);

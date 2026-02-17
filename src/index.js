@@ -12,9 +12,9 @@ export default {
 			return await stub.fetch(request);
 		}
 
-		if (url.pathname === '/telemetry') {
+		if (url.pathname === '/tracker/upload') {
 			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
-			return await stub.telemetry(request)
+			return await stub.uploadTrackingData(request)
 		}
 
 		if (url.pathname === '/tracker') {
