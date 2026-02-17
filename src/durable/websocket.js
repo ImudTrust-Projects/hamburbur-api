@@ -86,13 +86,13 @@ export class WebSocketDurable extends DurableObject {
 		}
 
 		const baseEmbed = {
-			title: `Found ${trackingData.IsUserKnown ? trackingData.Username : 'someone'}${trackingData.HasSpecialCosmetic ? ` with ${trackingData.SpecialCosmetic}` : ''}!`,
+			title: `Found ${trackingData.isUserKnown ? trackingData.username : 'someone'}${trackingData.hasSpecialCosmetic ? ` with ${trackingData.specialCosmetic}` : ''}!`,
 			fields: [
-				{ name: 'Room Code', value: trackingData.RoomCode || 'N/A' },
-				{ name: 'Players In Code', value: `${trackingData.PlayersInRoom}/10` },
-				{ name: 'In Game Name', value: trackingData.InGameName || 'Unknown' },
-				{ name: 'GameMode String', value: trackingData.GameModeString || 'Unknown' },
-				{ name: 'UserID', value: trackingData.UserId || 'Unknown' }
+				{ name: 'Room Code', value: trackingData.roomCode || 'N/A' },
+				{ name: 'Players In Code', value: trackingData.playersInRoom || 'N/A' },
+				{ name: 'In Game Name', value: trackingData.inGameName || 'N/A' },
+				{ name: 'GameMode String', value: trackingData.gameModeString || 'N/A' },
+				{ name: 'UserID', value: trackingData.userId || 'N/A' }
 			],
 			color: 0x2B265B
 		};
@@ -190,15 +190,14 @@ export class WebSocketDurable extends DurableObject {
 						break;
 
 					case 'telemetryUpload':
-						const uploadData = data.roomData;
 						const telemetryPayload = {
 							embeds: [
 								{
-									title: `Code uploaded to telemetry by ${uploadData.Username}`,
+									title: `Code uploaded to telemetry by ${data.username}`,
 									fields: [
-										{ name: 'Code', value: uploadData.RoomCode },
-										{ name: 'Players In Code', value: `${uploadData.PlayersInRoom}/10` },
-										{ name: 'GameMode String', value: uploadData.GameModeString }
+										{ name: 'Code', value: data.roomCode || 'N/A' },
+										{ name: 'Players In Code', value: data.playersInCode || 'N/A' },
+										{ name: 'GameMode String', value: data.gameModeString || 'N/A' }
 									]
 								}
 							]
@@ -214,17 +213,6 @@ export class WebSocketDurable extends DurableObject {
 						break;
 
 					case 'broadcastData':
-						for (const socket of this.hamburburSockets.keys()) {
-							try {
-								socket.send(JSON.stringify(data));
-							} catch (e) {
-								console.error(e);
-								this.hamburburSockets.delete(socket);
-							}
-						}
-						break;
-
-					case 'broadcastDataNonPhotonDependent':
 						for (const socket of this.hamburburSockets.keys()) {
 							try {
 								socket.send(JSON.stringify(data));
