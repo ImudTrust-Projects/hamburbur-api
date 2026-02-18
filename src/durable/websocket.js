@@ -1,7 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 
 export class WebSocketDurable extends DurableObject {
-	/** @typedef { Map<WebSocket, { userId: string, username: string }> }*/
 	hamburburSockets = new Map();
 	trackerSockets = new Set();
 	env;
@@ -32,103 +31,44 @@ export class WebSocketDurable extends DurableObject {
 		}
 	}
 
-	async uploadTrackingData(request) {
-		if (request.method !== 'POST') {
-			return new Response(JSON.stringify({
-				status: 405,
-				error: 'MethodNotAllowed',
-				message: 'You can only send POST requests to this URL'
-			}), {
-				status: 405,
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-		}
-
-		const authKey = request.headers.get('auth-key');
-
-		if (!authKey || authKey !== this.env.TELEMETRY_WRITE_SECRET_KEY) {
-			return new Response(JSON.stringify({
-				status: 401,
-				error: 'Unauthorized',
-				message: 'You are not authorized to send POST requests to this URL.'
-			}), {
-				headers: { 'Content-Type': 'application/json' },
-				status: 401
-			});
-		}
-
-		const trackingData = await request.json();
-		const hamburburSpecificData = {
-			type: 'telemetryUploadSpecial',
-			trackingData: trackingData
-		};
-
-		for (const socket of this.hamburburSockets.keys()) {
-			try {
-				socket.send(JSON.stringify(hamburburSpecificData));
-			} catch (e) {
-				console.error(e);
-				this.hamburburSockets.delete(socket);
-			}
-		}
-
-		for (const socket of this.trackerSockets) {
-			try {
-				socket.send(JSON.stringify(trackingData));
-			} catch (e) {
-				console.error(e);
-				this.hamburburSockets.delete(socket);
-			}
-		}
-
-		const baseEmbed = {
-			title: `Found ${trackingData.isUserKnown ? trackingData.username : 'someone'}${trackingData.hasSpecialCosmetic ? ` with ${trackingData.specialCosmetic}` : ''}!`,
-			fields: [
-				{ name: 'Room Code', value: trackingData.roomCode || 'N/A' },
-				{ name: 'Players In Code', value: trackingData.playersInRoom || 'N/A' },
-				{ name: 'In Game Name', value: trackingData.inGameName || 'N/A' },
-				{ name: 'GameMode String', value: trackingData.gameModeString || 'N/A' },
-				{ name: 'UserID', value: trackingData.userId || 'N/A' }
-			],
-			color: 0x2B265B
-		};
-
-		const sendWebhook = async (url, json) => {
-			const res = await fetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(json)
-			});
-
-			const text = await res.text();
-			console.log('Webhook status:', res.status, text);
-		};
-
-		await sendWebhook(this.env.HDM_WEBHOOK, { content: '<@&1469410214876020786>', embeds: [baseEmbed] });
-		await sendWebhook(this.env.GC_WEBHOOK, { embeds: [baseEmbed] });
-		await sendWebhook(this.env.AMP_WEBHOOK, { embeds: [baseEmbed] });
-		await sendWebhook(this.env.MB_WEBHOOK, {
-			username: 'Femboy Tracker',
-			avatar_url: 'https://wypher-images.zlothy.uk/',
-			embeds: [baseEmbed]
-		});
-	}
-
-	dashboard(request) {
-		return new Response(JSON.stringify({
-			'amount of people reading tracking data': this.hamburburSockets.size + this.trackerSockets.size,
-			'hamburbur users': Array.from(this.hamburburSockets.values()).map(user => user.username)
-		}), {
-			headers: { 'Content-Type': 'application/json' },
-			status: 200
-		});
-	}
-
 	async fetch(request) {
+		const url = new URL(request.url);
+
+		if (url.pathname === '/internal/dashboard-data') {
+			return new Response(JSON.stringify({
+				hamburburs: Array.from(this.hamburburSockets.values()),
+				trackerCount: this.trackerSockets.size
+			}), {
+				headers: { 'Content-Type': 'application/json' }
+			});
+		}
+
+		if (url.pathname === '/internal/sockets-tracking') {
+			const trackingData = await request.json();
+			const hamburburSpecificData = {
+				type: 'telemetryUploadSpecial',
+				trackingData: trackingData
+			};
+
+			for (const socket of this.hamburburSockets.keys()) {
+				try {
+					socket.send(JSON.stringify(hamburburSpecificData));
+				} catch (e) {
+					console.error(e);
+					this.hamburburSockets.delete(socket);
+				}
+			}
+
+			for (const socket of this.trackerSockets) {
+				try {
+					socket.send(JSON.stringify(trackingData));
+				} catch (e) {
+					console.error(e);
+					this.hamburburSockets.delete(socket);
+				}
+			}
+		}
+
 		const upgradeHeader = request.headers.get('Upgrade');
 
 		if (!upgradeHeader || upgradeHeader !== 'websocket') {
@@ -141,8 +81,6 @@ export class WebSocketDurable extends DurableObject {
 				status: 426
 			});
 		}
-
-		const url = new URL(request.url);
 
 		if (url.pathname === '/websocket') {
 			const key = url.searchParams.get('key');

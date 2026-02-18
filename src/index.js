@@ -1,30 +1,49 @@
 export { WebSocketDurable } from './durable/websocket';
-import data from './data';
+import data from './data/data.json';
 import mainPage from './main-page.html';
-import { handleDataManagement } from './data-manager';
+import { handleDataManagement } from './data/data-manager';
+import { uploadTrackingData, uploadS3RoomData } from './tracker/tracker-manager';
 
 export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
+		const webSocketDurableStub = env.WEBSOCKET_DURABLE.getByName('websocket');
 
 		if (url.pathname === '/websocket') {
-			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
-			return await stub.fetch(request);
+			return await webSocketDurableStub.fetch(request);
 		}
 
-		if (url.pathname === '/tracker/upload') {
-			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
-			return await stub.uploadTrackingData(request)
-		}
+		if (url.pathname.startsWith('/tracker')) {
+			const other = url.pathname.replace('/tracker', '');
+			switch (other) {
+				case '/upload':
+					return await uploadTrackingData(request, env);
 
-		if (url.pathname === '/tracker') {
-			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
-			return await stub.fetch(request);
+				case '/upload/s3-room':
+					return await uploadS3RoomData(request, env);
+
+				default:
+					return await webSocketDurableStub.fetch(request);
+			}
 		}
 
 		if (url.pathname === '/dashboard') {
-			const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
-			return stub.dashboard(request);
+			const response = await webSocketDurableStub.fetch(
+				'https://state-handler.internal/internal/dashboard-data'
+			);
+
+			const socketMapsJson = await response.json();
+
+			return new Response(JSON.stringify({
+				status: 200,
+				trackers: socketMapsJson.trackerCount,
+				hamburburs: socketMapsJson.hamburburs.map(u => u.username)
+			}), {
+				status: 200,
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
 		}
 
 		if (url.pathname === '/banned') {
@@ -49,7 +68,7 @@ export default {
 			});
 		}
 
-		if (url.pathname === '/manage' && request.method === 'POST') {
+		if (url.pathname === '/manage') {
 			return handleDataManagement(request, env);
 		}
 

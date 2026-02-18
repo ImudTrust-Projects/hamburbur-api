@@ -1,5 +1,18 @@
 export async function handleDataManagement(request, env) {
 	try {
+		if (request.method !== 'POST') {
+			return new Response(JSON.stringify({
+				status: 405,
+				error: 'MethodNotAllowed',
+				message: 'You can only send POST requests to this URL'
+			}), {
+				status: 405,
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+		}
+
 		const authHeader = request.headers.get('Authorization');
 		if (!authHeader || authHeader !== env.SECRET_KEY) {
 			return new Response(JSON.stringify({ 'Unauthorized': 'To interact with any of the non static hamburbur APIs you must supply the secret key' }), {
@@ -19,7 +32,6 @@ export async function handleDataManagement(request, env) {
 		}
 
 		let currentData = await env.DATA_KV.get('data.json', { type: 'json' });
-		if (!currentData) currentData = data;
 
 		let result;
 		switch (action) {
@@ -82,7 +94,7 @@ export async function handleDataManagement(request, env) {
 				break;
 			case 'add_mod_specific_admin':
 				result = addModSpecificAdmin(currentData, params);
-				break; // hi
+				break;
 			case 'remove_mod_specific_admin':
 				result = removeModSpecificAdmin(currentData, params);
 				break;
