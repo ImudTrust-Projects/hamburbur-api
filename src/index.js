@@ -35,7 +35,6 @@ export default {
 			const socketMapsJson = await response.json();
 
 			return new Response(JSON.stringify({
-				status: 200,
 				trackers: socketMapsJson.trackerCount,
 				hamburburs: socketMapsJson.hamburburs.map(u => u.username)
 			}), {
@@ -43,20 +42,6 @@ export default {
 				headers: {
 					'Content-Type': 'application/json'
 				}
-			});
-		}
-
-		if (url.pathname === '/banned') {
-			let json = await request.json();
-			let name = json.name;
-			await fetch(env.GC_BANNED_WEBHOOK, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					content: `${name} was just banned by the hamburbur™ ban gun @everyone`
-				})
 			});
 		}
 
