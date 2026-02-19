@@ -7,7 +7,9 @@
 	"name": "hamburbur-api",
 	"main": "src/index.js",
 	"compatibility_date": "2026-01-28",
-	"route": "hamburbur.org/*",
+	"routes": [
+		"hamburbur.org/*"
+	],
 	"migrations": [
 		{
 			"new_sqlite_classes": [
