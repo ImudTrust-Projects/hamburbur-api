@@ -44,27 +44,31 @@ export class WebSocketDurable extends DurableObject {
 		}
 
 		if (url.pathname === '/internal/sockets-tracking') {
-			const trackingData = await request.json();
-			const hamburburSpecificData = {
-				type: 'telemetryUploadSpecial',
-				trackingData: trackingData
-			};
+			const suppliedAuthKey = request.headers.get('auth-key');
 
-			for (const socket of this.hamburburSockets.keys()) {
-				try {
-					socket.send(JSON.stringify(hamburburSpecificData));
-				} catch (e) {
-					console.error(e);
-					this.hamburburSockets.delete(socket);
+			if (suppliedAuthKey && suppliedAuthKey === this.env.SECRET_KEY) {
+				const trackingData = await request.json();
+				const hamburburSpecificData = {
+					type: 'telemetryUploadSpecial',
+					trackingData: trackingData
+				};
+
+				for (const socket of this.hamburburSockets.keys()) {
+					try {
+						socket.send(JSON.stringify(hamburburSpecificData));
+					} catch (e) {
+						console.error(e);
+						this.hamburburSockets.delete(socket);
+					}
 				}
-			}
 
-			for (const socket of this.trackerSockets) {
-				try {
-					socket.send(JSON.stringify(trackingData));
-				} catch (e) {
-					console.error(e);
-					this.hamburburSockets.delete(socket);
+				for (const socket of this.trackerSockets) {
+					try {
+						socket.send(JSON.stringify(trackingData));
+					} catch (e) {
+						console.error(e);
+						this.hamburburSockets.delete(socket);
+					}
 				}
 			}
 		}

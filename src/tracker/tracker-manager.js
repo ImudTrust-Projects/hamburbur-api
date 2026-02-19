@@ -82,7 +82,8 @@ async function handleTrackedPlayer(trackingData, env) {
 	await stub.fetch('https://state-handler.internal/internal/sockets-tracking', {
 		method: 'POST',
 		headers: {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
+			'auth-key': env.SECRET_KEY
 		},
 		body: JSON.stringify(trackingData)
 	});
