@@ -45,7 +45,7 @@ export default {
 			});
 		}
 
-		if (url.pathname === '/data' || url.pathname === '/json' || url.pathname === '/serverdata' || url.pathname.startsWith('hamburburdata')) {
+		if (url.pathname === '/data' || url.pathname === '/json' || url.pathname === '/serverdata' || url.pathname.startsWith('/hamburburdata')) {
 			let currentData = await env.DATA_KV.get('data.json', { type: 'json' });
 			if (!currentData) currentData = structuredClone(data); //fallback
 			return new Response(JSON.stringify(currentData), {
