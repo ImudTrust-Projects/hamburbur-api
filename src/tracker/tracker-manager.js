@@ -119,6 +119,7 @@ async function handleTrackedPlayer(trackingData, env) {
 	await sendWebhook(env.MB_WEBHOOK, {
 		username: 'hamburbur™ Tracker',
 		avatar_url: 'https://files.hamburbur.org/HamburburSuperAdmin.png',
+		content: '<@&1474125765758029825>',
 		embeds: [baseEmbed]
 	});
 }
