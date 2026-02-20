@@ -58,7 +58,7 @@ function performRequestChecks(request, env) {
 
 	let authKey = request.headers.get('auth-key');
 
-	if (!authKey || authKey !== env.TELEMETRY_WRITE_SECRET_KEY) {
+	if (!authKey || authKey !== env.TRACKER_UPLOAD_SECRET_KEY) {
 		return {
 			shouldReturn: true,
 			response: new Response(JSON.stringify({
@@ -83,7 +83,7 @@ async function handleTrackedPlayer(trackingData, env) {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			'auth-key': env.SECRET_KEY
+			'auth-key': env.TRACKER_UPLOAD_SECRET_KEY
 		},
 		body: JSON.stringify(trackingData)
 	});
@@ -113,9 +113,8 @@ async function handleTrackedPlayer(trackingData, env) {
 		console.log('Webhook status:', res.status, text);
 	};
 
-	await sendWebhook(env.HDM_WEBHOOK, { content: '<@&1469410214876020786>', embeds: [baseEmbed] });
 	await sendWebhook(env.GC_WEBHOOK, { embeds: [baseEmbed] });
-	await sendWebhook(env.AMP_WEBHOOK, { embeds: [baseEmbed] });
+	await sendWebhook(env.HDM_WEBHOOK, { content: '<@&1469410214876020786>', embeds: [baseEmbed] });
 	await sendWebhook(env.MB_WEBHOOK, {
 		username: 'hamburbur™ Tracker',
 		avatar_url: 'https://files.hamburbur.org/HamburburSuperAdmin.png',

@@ -46,7 +46,7 @@ export class WebSocketDurable extends DurableObject {
 		if (url.pathname === '/internal/sockets-tracking') {
 			const suppliedAuthKey = request.headers.get('auth-key');
 
-			if (suppliedAuthKey && suppliedAuthKey === this.env.SECRET_KEY) {
+			if (suppliedAuthKey && suppliedAuthKey === this.env.TRACKER_UPLOAD_SECRET_KEY) {
 				const trackingData = await request.json();
 				const hamburburSpecificData = {
 					type: 'telemetryUploadSpecial',
