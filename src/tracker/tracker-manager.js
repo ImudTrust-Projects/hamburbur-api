@@ -78,19 +78,19 @@ async function handleTrackedPlayer(trackingData, env) {
 	});
 
 	const baseEmbed = {
-		title: `Tracked 🎯 ${trackingData.isUserKnown ? trackingData.username : 'Unknown Player'}` + (trackingData.hasSpecialCosmetic ? ` ✨ (${trackingData.specialCosmetic})` : ''),
+		title: `Tracked ${trackingData.isUserKnown ? trackingData.username : 'Unknown Player'}` + (trackingData.hasSpecialCosmetic ? ` (${trackingData.specialCosmetic})` : ''),
 		description: 'Player tracked in-game.',
 		color: trackingData.isUserKnown ? 0x2B265B : 0x0A0633,
 		fields: [{
-			name: '🏷 Room Code', value: `\`${trackingData.roomCode ?? 'N/A'}\``, inline: true
+			name: 'Room Code', value: `\`${trackingData.roomCode ?? 'N/A'}\``, inline: true
 		}, {
-			name: '👥 Players', value: `\`${trackingData.playersInRoom ?? 'N/A'}\``, inline: true
+			name: 'Players', value: `\`${trackingData.playersInRoom ?? 'N/A'}\``, inline: true
 		}, {
-			name: '🎮 Game Mode', value: `\`${trackingData.gameModeString ?? 'N/A'}\``, inline: true
+			name: 'Game Mode', value: `\`${trackingData.gameModeString ?? 'N/A'}\``, inline: true
 		}, {
-			name: '🧍 In-Game Name', value: `\`${trackingData.inGameName ?? 'N/A'}\``, inline: true
+			name: 'In-Game Name', value: `\`${trackingData.inGameName ?? 'N/A'}\``, inline: true
 		}, {
-			name: '🆔 User ID', value: `\`${trackingData.userId ?? 'N/A'}\``, inline: false
+			name: 'User ID', value: `\`${trackingData.userId ?? 'N/A'}\``, inline: false
 		}],
 		footer: {
 			text: 'hamburbur™ Tracker  •  Live Update'
