@@ -93,7 +93,7 @@ async function handleTrackedPlayer(trackingData, env) {
 			name: '🆔 User ID', value: `\`${trackingData.userId ?? 'N/A'}\``, inline: false
 		}],
 		footer: {
-			text: 'hamburbur™ Tracker • Live Update'
+			text: 'hamburbur™ Tracker  •  Live Update'
 		},
 		timestamp: new Date().toISOString()
 	};
