@@ -40,7 +40,7 @@ export class WebSocketDurable extends DurableObject {
 		if (url.pathname === '/internal/dashboard-data') {
 			return new Response(JSON.stringify({
 				hamburburs: Array.from(this.hamburburSockets.values()),
-				trackerCount: this.trackerSockets.size
+				trackerCount: this.trackerSockets.size + this.hamburburSockets.size
 			}), {
 				headers: { 'Content-Type': 'application/json' }
 			});
@@ -122,6 +122,7 @@ export class WebSocketDurable extends DurableObject {
 
 			server.accept();
 			this.hamburburSockets.set(server, { userId: userId, username: username });
+			await this.checkForTrackerPeak();
 
 			server.addEventListener('message', async event => {
 				const data = JSON.parse(event.data);
@@ -187,6 +188,7 @@ export class WebSocketDurable extends DurableObject {
 
 			server.accept();
 			this.trackerSockets.add(server);
+			await this.checkForTrackerPeak();
 
 			server.addEventListener('message', event => {
 				console.log('lolz someone tried pushing data');
@@ -196,24 +198,26 @@ export class WebSocketDurable extends DurableObject {
 				this.trackerSockets.delete(server);
 			});
 
-			const lastPeak = await this.ctx.storage.get('trackerPeak');
-			const trackers = this.trackerSockets.size;
-			if (!lastPeak || lastPeak < trackers) {
-				await this.ctx.storage.put('trackerPeak', trackers);
-				await fetch(this.env.USER_COUNT_WEBHOOK, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						content: `new peak of ${trackers} people connected to the tracker socket`
-					})
-				});
-			}
-
 			return new Response(null, {
 				status: 101,
 				webSocket: client
+			});
+		}
+	}
+
+	async checkForTrackerPeak() {
+		const lastPeak = await this.ctx.storage.get('trackerPeak');
+		const trackers = this.trackerSockets.size + this.hamburburSockets.size;
+		if (!lastPeak || lastPeak < trackers) {
+			await this.ctx.storage.put('trackerPeak', trackers);
+			await fetch(this.env.USER_COUNT_WEBHOOK, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					content: `new peak of ${trackers} people connected to the tracker socket`
+				})
 			});
 		}
 	}
