@@ -42,14 +42,10 @@ export async function uploadTrackingData(request, env) {
 function performRequestChecks(request, env) {
 	if (request.method !== 'POST') {
 		return {
-			shouldReturn: true,
-			response: new Response(JSON.stringify({
-				status: 405,
-				error: 'MethodNotAllowed',
-				message: 'You can only send POST requests to this URL'
+			shouldReturn: true, response: new Response(JSON.stringify({
+				status: 405, error: 'MethodNotAllowed', message: 'You can only send POST requests to this URL'
 			}), {
-				status: 405,
-				headers: {
+				status: 405, headers: {
 					'Content-Type': 'application/json'
 				}
 			})
@@ -60,14 +56,10 @@ function performRequestChecks(request, env) {
 
 	if (!authKey || authKey !== env.TRACKER_UPLOAD_SECRET_KEY) {
 		return {
-			shouldReturn: true,
-			response: new Response(JSON.stringify({
-				status: 401,
-				error: 'Unauthorized',
-				message: 'You are not authorized to send POST requests to this URL.'
+			shouldReturn: true, response: new Response(JSON.stringify({
+				status: 401, error: 'Unauthorized', message: 'You are not authorized to send POST requests to this URL.'
 			}), {
-				headers: { 'Content-Type': 'application/json' },
-				status: 401
+				headers: { 'Content-Type': 'application/json' }, status: 401
 			})
 		};
 	}
@@ -80,33 +72,37 @@ function performRequestChecks(request, env) {
 async function handleTrackedPlayer(trackingData, env) {
 	const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
 	await stub.fetch('https://state-handler.internal/internal/sockets-tracking', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'auth-key': env.TRACKER_UPLOAD_SECRET_KEY
-		},
-		body: JSON.stringify(trackingData)
+		method: 'POST', headers: {
+			'Content-Type': 'application/json', 'auth-key': env.TRACKER_UPLOAD_SECRET_KEY
+		}, body: JSON.stringify(trackingData)
 	});
 
 	const baseEmbed = {
-		title: `Found ${trackingData.isUserKnown ? trackingData.username : 'someone'}${trackingData.hasSpecialCosmetic ? ` with ${trackingData.specialCosmetic}` : ''}!`,
-		fields: [
-			{ name: 'Room Code', value: trackingData.roomCode || 'N/A' },
-			{ name: 'Players In Code', value: trackingData.playersInRoom || 'N/A' },
-			{ name: 'In Game Name', value: trackingData.inGameName || 'N/A' },
-			{ name: 'GameMode String', value: trackingData.gameModeString || 'N/A' },
-			{ name: 'UserID', value: trackingData.userId || 'N/A' }
-		],
-		color: 0x2B265B
+		title: `Tracked 🎯 ${trackingData.isUserKnown ? trackingData.username : 'Unknown Player'}` + (trackingData.hasSpecialCosmetic ? ` ✨ (${trackingData.specialCosmetic})` : ''),
+		description: 'Player tracked in-game.',
+		color: trackingData.isUserKnown ? 0x2B265B : 0x0A0633,
+		fields: [{
+			name: '🏷 Room Code', value: `\`${trackingData.roomCode ?? 'N/A'}\``, inline: true
+		}, {
+			name: '👥 Players', value: `\`${trackingData.playersInRoom ?? 'N/A'}\``, inline: true
+		}, {
+			name: '🎮 Game Mode', value: `\`${trackingData.gameModeString ?? 'N/A'}\``, inline: true
+		}, {
+			name: '🧍 In-Game Name', value: `\`${trackingData.inGameName ?? 'N/A'}\``, inline: true
+		}, {
+			name: '🆔 User ID', value: `\`${trackingData.userId ?? 'N/A'}\``, inline: false
+		}],
+		footer: {
+			text: 'hamburbur™ Tracker • Live Update'
+		},
+		timestamp: new Date().toISOString()
 	};
 
 	const sendWebhook = async (url, json) => {
 		const res = await fetch(url, {
-			method: 'POST',
-			headers: {
+			method: 'POST', headers: {
 				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(json)
+			}, body: JSON.stringify(json)
 		});
 
 		const text = await res.text();
