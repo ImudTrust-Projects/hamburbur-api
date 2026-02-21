@@ -3,10 +3,13 @@ import { DurableObject } from 'cloudflare:workers';
 export class WebSocketDurable extends DurableObject {
 	hamburburSockets = new Map();
 	trackerSockets = new Set();
+
+	ctx;
 	env;
 
 	constructor(ctx, env) {
 		super(ctx, env);
+		this.ctx = ctx;
 		this.env = env;
 	}
 
@@ -192,6 +195,28 @@ export class WebSocketDurable extends DurableObject {
 			server.addEventListener('close', event => {
 				this.trackerSockets.delete(server);
 			});
+
+			const lastPeak = await this.ctx.storage.get('trackerPeak');
+			const trackers = this.trackerSockets.size;
+			if (!lastPeak || lastPeak < trackers) {
+				await this.ctx.storage.put('trackerPeak', trackers);
+				await fetch(this.env.USER_COUNT_WEBHOOK, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						embeds: [
+							{
+								title: 'New peak of people connected to the tracker socket',
+								fields: [
+									{ name: 'Amount', value: trackers }
+								]
+							}
+						]
+					})
+				});
+			}
 
 			return new Response(null, {
 				status: 101,
