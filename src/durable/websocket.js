@@ -206,14 +206,7 @@ export class WebSocketDurable extends DurableObject {
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
-						embeds: [
-							{
-								title: 'New peak of people connected to the tracker socket',
-								fields: [
-									{ name: 'Amount', value: trackers }
-								]
-							}
-						]
+						content: `new peak of ${trackers} people connected to the tracker socket`
 					})
 				});
 			}
