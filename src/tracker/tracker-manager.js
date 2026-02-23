@@ -16,7 +16,7 @@ export async function uploadS3RoomData(request, env) {
 			continue;
 		}
 
-		await handleTrackedPlayer({
+		await handleTrackedPlayer("S3", {
 			isUserKnown: actualPlayerName,
 			username: actualPlayerName,
 			hasSpecialCosmetic: knownCosmetics,
@@ -36,7 +36,7 @@ export async function uploadTrackingData(request, env) {
 		return returnData.response;
 	}
 
-	await handleTrackedPlayer(await request.json(), env);
+	await handleTrackedPlayer("GC Tracker", await request.json(), env);
 }
 
 function performRequestChecks(request, env) {
@@ -69,7 +69,7 @@ function performRequestChecks(request, env) {
 	};
 }
 
-async function handleTrackedPlayer(trackingData, env) {
+async function handleTrackedPlayer(source, trackingData, env) {
 	const stub = env.WEBSOCKET_DURABLE.getByName('websocket');
 	await stub.fetch('https://state-handler.internal/internal/sockets-tracking', {
 		method: 'POST', headers: {
@@ -93,7 +93,7 @@ async function handleTrackedPlayer(trackingData, env) {
 			name: 'User ID', value: `\`${trackingData.userId ?? 'N/A'}\``, inline: false
 		}],
 		footer: {
-			text: 'hamburbur™ Tracker  •  Live Update'
+			text: `hamburbur™ Tracker  •  Live Update  •  Tracked by ${source}`
 		},
 		timestamp: new Date().toISOString()
 	};
@@ -110,7 +110,7 @@ async function handleTrackedPlayer(trackingData, env) {
 	};
 
 	await sendWebhook(env.GC_WEBHOOK, { embeds: [baseEmbed] });
-	await sendWebhook(env.HDM_WEBHOOK, { content: '<@&1469410214876020786>', embeds: [baseEmbed] });
+	await sendWebhook(env.HDT_WEBHOOK, { embeds: [baseEmbed] });
 	await sendWebhook(env.MB_WEBHOOK, {
 		username: 'hamburbur™ Tracker',
 		avatar_url: 'https://files.hamburbur.org/HamburburSuperAdmin.png',
