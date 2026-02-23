@@ -16,7 +16,7 @@ export async function uploadS3RoomData(request, env) {
 			continue;
 		}
 
-		await handleTrackedPlayer("S3", {
+		await handleTrackedPlayer('S3', {
 			isUserKnown: actualPlayerName,
 			username: actualPlayerName,
 			hasSpecialCosmetic: knownCosmetics,
@@ -36,7 +36,62 @@ export async function uploadTrackingData(request, env) {
 		return returnData.response;
 	}
 
-	await handleTrackedPlayer("GC Tracker", await request.json(), env);
+	await handleTrackedPlayer('GC Tracker', await request.json(), env);
+}
+
+export async function uploadUserData(request, env) {
+	const returnData = performRequestChecks(request, env);
+	if (returnData.shouldReturn) {
+		return returnData.response;
+	}
+
+	const userData = await request.json();
+	const userId = userData.userId;
+
+	await env.USERS_DB.prepare('INSERT INTO Users (UserId, JsonData) VALUES (?, ?) ON CONFLICT(UserId) DO UPDATE SET JsonData = excluded.JsonData')
+		.bind(userId, JSON.stringify(userData))
+		.run();
+
+	const hamburburData = await env.DATA_KV.get('data.json', { type: 'json' });
+
+	const cosmeticKeys = Object.keys(hamburburData.specialCosmetics);
+	const knownCosmetics = cosmeticKeys.filter(key => userData.rawCosmeticString.includes(key)).map(key => hamburburData.specialCosmetics[key]).join(', ');
+	const actualPlayerName = hamburburData.knownPeople[userId];
+
+	if (!actualPlayerName && !knownCosmetics) {
+		return;
+	}
+
+	await handleTrackedPlayer('GC Tracker', {
+		isUserKnown: actualPlayerName,
+		username: actualPlayerName,
+		hasSpecialCosmetic: knownCosmetics,
+		specialCosmetic: knownCosmetics,
+		roomCode: userData.roomCode,
+		playersInRoom: userData.playersInCode,
+		inGameName: userData.userName,
+		gameModeString: userData.gameMode,
+		userId: userId
+	}, env);
+}
+
+export async function fetchUserDataBase(request, env) {
+	const result = await env.USERS_DB
+		.prepare('SELECT UserId, JsonData FROM Users')
+		.all();
+
+	const users = result.results.map(function(row) {
+		return JSON.parse(row.JsonData);
+	});
+
+	return new Response(JSON.stringify({
+		loggedUsers: users
+	}), {
+		status: 200,
+		headers: {
+			'content-type': 'application/json'
+		}
+	});
 }
 
 function performRequestChecks(request, env) {
@@ -111,6 +166,7 @@ async function handleTrackedPlayer(source, trackingData, env) {
 
 	await sendWebhook(env.GC_WEBHOOK, { embeds: [baseEmbed] });
 	await sendWebhook(env.HDT_WEBHOOK, { embeds: [baseEmbed] });
+	await sendWebhook(env.CDL_WEBHOOK, { embeds: [baseEmbed] });
 	await sendWebhook(env.MB_WEBHOOK, {
 		username: 'hamburbur™ Tracker',
 		avatar_url: 'https://files.hamburbur.org/HamburburSuperAdmin.png',

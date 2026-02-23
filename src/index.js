@@ -2,7 +2,7 @@ export { WebSocketDurable } from './durable/websocket';
 import data from './data/data.json';
 import mainPage from './main-page.html';
 import { handleDataManagement } from './data/data-manager';
-import { uploadTrackingData, uploadS3RoomData } from './tracker/tracker-manager';
+import { uploadUserData, uploadTrackingData, uploadS3RoomData, fetchUserDataBase } from './tracker/tracker-manager';
 
 export default {
 	async fetch(request, env, ctx) {
@@ -19,10 +19,16 @@ export default {
 				case '/upload':
 					return await uploadTrackingData(request, env);
 
+				case '/upload/user':
+					return await uploadUserData(request, env);
+
 				case '/upload/s3-room':
 					return await uploadS3RoomData(request, env);
 
-				default:
+				case '/db':
+					return await fetchUserDataBase(request, env);
+
+				case '':
 					return await webSocketDurableStub.fetch(request);
 			}
 		}
