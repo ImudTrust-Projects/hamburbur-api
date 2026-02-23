@@ -165,7 +165,7 @@ async function handleTrackedPlayer(source, trackingData, env) {
 	};
 
 	await sendWebhook(env.GC_WEBHOOK, { embeds: [baseEmbed] });
-	await sendWebhook(env.HDT_WEBHOOK, { embeds: [baseEmbed] });
+	await sendWebhook(env.HDT_WEBHOOK, { content: '<@&1475615782389022812>', embeds: [baseEmbed] });
 	await sendWebhook(env.CDL_WEBHOOK, { embeds: [baseEmbed] });
 	await sendWebhook(env.MB_WEBHOOK, {
 		username: 'hamburbur™ Tracker',
