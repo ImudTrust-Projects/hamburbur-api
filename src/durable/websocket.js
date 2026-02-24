@@ -53,7 +53,7 @@ export class WebSocketDurable extends DurableObject {
 			});
 		}
 
-		if (url.pathname === '/tracker') {
+		if (url.pathname === '/tracker' || url.pathname === '/tracker/') {
 			const webSocketPair = new WebSocketPair();
 			const [client, server] = Object.values(webSocketPair);
 

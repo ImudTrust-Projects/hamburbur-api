@@ -24,7 +24,7 @@ export default {
 				case '/db':
 					return await fetchUserDataBase(request, env);
 
-				case '':
+				case '' || '/':
 					return await webSocketDurableStub.fetch(request);
 			}
 		}
