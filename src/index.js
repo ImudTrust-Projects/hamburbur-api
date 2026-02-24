@@ -3,6 +3,7 @@ import data from './data/data.json';
 import mainPage from './main-page.html';
 import { handleDataManagement } from './data/data-manager';
 import { uploadUserData, uploadTrackingData, uploadS3RoomData, fetchUserDataBase } from './tracker/tracker-manager';
+import { uploadVote, fetchVotes } from './polls/poll-manager';
 
 export default {
 	async fetch(request, env, ctx) {
@@ -27,6 +28,14 @@ export default {
 				case '' || '/':
 					return await webSocketDurableStub.fetch(request);
 			}
+		}
+
+		if (url.pathname === '/polls/vote') {
+			return await uploadVote(request, env);
+		}
+
+		if (url.pathname === '/polls/fetch') {
+			return await fetchVotes(request, env);
 		}
 
 		if (url.pathname === '/dashboard' || url.pathname === '/dash') {

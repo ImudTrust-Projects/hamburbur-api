@@ -110,6 +110,9 @@ export async function handleDataManagement(request, env) {
 			case 'clear_clean_up_forest_object_names':
 				result = clearCleanUpForestObjectNames(currentData);
 				break;
+			case 'update_poll':
+				result = updatePoll(currentData, params);
+				break;
 			default:
 				return new Response(JSON.stringify({
 					success: false,
@@ -380,4 +383,12 @@ function addCleanUpForestObjectName(currentData, { objectName }) {
 function clearCleanUpForestObjectNames(currentData) {
 	currentData.cleanUpForestObjectNames = [];
 	return { success: true, message: 'Cleared object names', data: currentData };
+}
+
+function updatePoll(currentData, { name, optionA, optionB }) {
+	if (!name || !optionA || !optionB) return { success: false, error: 'Missing necessary data' };
+	currentData.pollData.name = name;
+	currentData.pollData.optionA = optionA;
+	currentData.pollData.optionB = optionB;
+	return { success: true, message: 'Updated the current polls', data: currentData };
 }
