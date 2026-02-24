@@ -9,10 +9,6 @@ export default {
 		const url = new URL(request.url);
 		const webSocketDurableStub = env.WEBSOCKET_DURABLE.getByName('websocket');
 
-		if (url.pathname === '/websocket') {
-			return await webSocketDurableStub.fetch(request);
-		}
-
 		if (url.pathname.startsWith('/tracker')) {
 			const other = url.pathname.replace('/tracker', '');
 			switch (other) {
@@ -42,7 +38,6 @@ export default {
 
 			return new Response(JSON.stringify({
 				trackers: socketMapsJson.trackerCount,
-				hamburburs: socketMapsJson.hamburburs.map(u => u.username)
 			}), {
 				status: 200,
 				headers: {
@@ -51,7 +46,7 @@ export default {
 			});
 		}
 
-		if (url.pathname === '/data' || url.pathname === '/json' || url.pathname === '/serverdata' || url.pathname.startsWith('/hamburburdata')) {
+		if (url.pathname === '/data' || url.pathname === '/json' || url.pathname === '/serverdata' || url.pathname === '/hamburburdata') {
 			let currentData = await env.DATA_KV.get('data.json', { type: 'json' });
 			if (!currentData) currentData = structuredClone(data); //fallback
 			return new Response(JSON.stringify(currentData), {
