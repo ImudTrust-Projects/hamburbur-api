@@ -3,7 +3,7 @@ import data from './data/data.json';
 import mainPage from './main-page.html';
 import { handleDataManagement } from './data/data-manager';
 import { uploadUserData, uploadTrackingData, uploadS3RoomData, fetchUserDataBase } from './tracker/tracker-manager';
-import { uploadVote, fetchVotes } from './polls/poll-manager';
+import { uploadVote, fetchVotes, fetchArchivedVotes } from './polls/poll-manager';
 
 export default {
 	async fetch(request, env, ctx) {
@@ -36,6 +36,10 @@ export default {
 
 		if (url.pathname === '/polls/fetch') {
 			return await fetchVotes(request, env);
+		}
+
+		if (url.pathname === '/polls/previous') {
+			return await fetchArchivedVotes(request, env);
 		}
 
 		if (url.pathname === '/dashboard' || url.pathname === '/dash') {
