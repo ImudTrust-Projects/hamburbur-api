@@ -35,18 +35,6 @@
 	"observability": {
 		"enabled": true
 	},
-	"d1_databases": [
-		{
-			"binding": "USERS_DB",
-			"database_name": "USERS_DB",
-			"database_id": "1fd81e20-7bc7-4cf7-8372-4dbef19cf64f"
-		},
-		{
-			"binding": "POLL_DB",
-			"database_name": "POLL_DB",
-			"database_id": "5dda601f-c49f-4e4c-946e-5a22af57129b"
-		}
-	]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
