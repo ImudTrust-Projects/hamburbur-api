@@ -7,9 +7,6 @@
 	"name": "console-x-something-api",
 	"main": "src/index.js",
 	"compatibility_date": "2026-01-28",
-	"routes": [
-		"hamburbur.org/*"
-	],
 	"migrations": [
 		{
 			"new_sqlite_classes": [
